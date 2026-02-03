@@ -46,7 +46,7 @@ function FullScreenMario() {
   resetSeed();
   resetSounds();
 
-  window.luigi = (localStorage && localStorage.luigi == "true");
+  window.luigi = !(localStorage && localStorage.luigi == "false");
 
   // With that all set, set the map to World11.
   window.gameon = true;

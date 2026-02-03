@@ -550,15 +550,16 @@ function scoreEnemyFin(enemy, amount) {
  */
 
 function moveSimple(me) {
+  if(me.xvel == 0) me.xvel = me.moveleft ? -0.1 : 0.1; // start moving
+  var target = me.moveleft ? -me.speed : me.speed;
+  me.xvel += Math.sign(target - me.xvel) * 0.05; // accelerate
+  me.xvel *= 0.98; // friction
   if(me.direction != me.moveleft) {
-    if(me.moveleft) {
-      me.xvel = -me.speed;
-      if(!me.noflip) unflipHoriz(me);
-    } else {
-      if(!me.noflip) flipHoriz(me);
-      me.xvel = me.speed; 
-    }
     me.direction = me.moveleft;
+    if(!me.noflip) {
+      if(me.moveleft) unflipHoriz(me);
+      else flipHoriz(me);
+    }
   }
 }
 
