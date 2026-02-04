@@ -98,7 +98,7 @@ function resetUnitsize(num) {
     window["unitsized" + i] = unitsize / i;
   }
   window.scale = unitsized2; // Typically 2
-  window.gravity = round(12 * unitsize) / 100; // Typically .48
+  window.gravity = round(8 * unitsize) / 100; // Typically .32 (reduced for slower falling)
 }
 
 function resetTimer(num) {

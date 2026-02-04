@@ -262,7 +262,7 @@ function setAreaPostCreation() {
   
   // Reset gravity and underwater
   map.underwater = map.area.underwater;
-  map.jumpmod = 1.056 + 3.5 * map.underwater;
+  map.jumpmod = 1.2 + 3.5 * map.underwater; // Increased from 1.056 for higher jumps
   map.has_lakitu = false;
   TimeHandler.addEvent(setMapGravity, 1);
   
