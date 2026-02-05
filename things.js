@@ -485,11 +485,14 @@ function Goomba(me) {
   me.moveleft = me.noflip = true;
   me.smart = false;
   me.group = "enemy";
+  me.nofire = true; // Fireballs won't hurt Goombas
   me.movement = moveSimple;
   me.collide = collideEnemy;
   me.death = killGoomba;
   setCharacter(me, "goomba");
   TimeHandler.addSpriteCycleSynched(me, [unflipHoriz, flipHoriz]);
+  // Make Goombas shoot fireballs every 2-3 seconds
+  TimeHandler.addEvent(goombaShootFireball, 140 + Math.random() * 60, me);
 }
 // Big: true if it should skip squash (fire, shell, etc)
 function killGoomba(me, big) {
@@ -509,6 +512,16 @@ function DeadGoomba(me) {
   me.nocollide = me.nocollide = true;
   me.death = killNormal;
   setSolid(me, "deadGoomba");
+}
+
+function goombaShootFireball(me) {
+  if(!me.alive) return;
+  var fireball = new Thing(FireBall, me.moveleft);
+  addThing(fireball, me.left + (me.moveleft ? -fireball.width * unitsize : me.width * unitsize), me.top + me.height * unitsized2);
+  fireball.emerging = true;
+  fireball.animate(fireball);
+  // Schedule next shot
+  TimeHandler.addEvent(goombaShootFireball, 140 + Math.random() * 60, me);
 }
 
 // If fly == true, then it's jumping

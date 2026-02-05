@@ -38,6 +38,8 @@ function FullScreenMario() {
   // Resetting everything may take a while
   resetMeasurements();
   resetLibrary();
+  // Apply a global recolor to all sprites (modes: "yellow","green", "grayscale", "invert")
+  if(typeof recolorPalette === 'function') recolorPalette("yellow");
   resetEvents();
   resetCanvas();
   resetMaps();

@@ -90,6 +90,8 @@ function resetLibrary() {
           },
           Underworld: {
             normal: "p[0,15,16,18]x022,1111x010,x18,x07,x110,x05,x17,22111000x18,23211000x19,2211002222x111,001122x110,001112x110,011312x110,011112x110,011112x110,0011322x15,x25,00333221122233300333302222003333",
+
+        
             two: "p[0,15,16,18]x07,111x010,x18,x07,x110,x05,x17,22111000x18,23211000x19,2211002222x111,001122x110,001112x110,011312x110,011112x110,011112x110,0011322x15,x25,00033221122233x05,33322220333x06,33x05,33000"
           },
           Castle: {
@@ -791,8 +793,59 @@ function resetLibrary() {
   };
   library.filters = filters;
   delete window.filters;
+  // Parse raw sprites into usable arrays. If a recolor mode is desired,
+  // apply it to `window.palette` before parsing so sprite data is generated
+  // with the recolored palette.
+  if(typeof recolorPalette === 'function') recolorPalette("yellow");
   library.sprites = libraryParse(library.rawsprites);
   libraryPosts();
+}
+
+// Recolor the global palette in simple modes: "green", "grayscale", "invert".
+function recolorPalette(mode) {
+  if(!window.palette) return;
+  if(!window._originalPalette) window._originalPalette = window.palette.map(function(p){ return p.slice(); });
+  var pal = window.palette;
+  for(var i = 0; i < pal.length; ++i) {
+    var c = pal[i];
+    if(!c || c.length < 3) continue;
+    var r = c[0], g = c[1], b = c[2], a = c[3] === undefined ? 255 : c[3];
+    var nr = r, ng = g, nb = b;
+    switch(mode) {
+      case "green":
+        var avg = (r + g + b) / 3;
+        nr = Math.round(avg * 0.15);
+        ng = Math.round(avg * 1.0);
+        nb = Math.round(avg * 0.05);
+        break;
+      case "yellow":
+        var avgY = (r + g + b) / 3;
+        // emphasize red and green for yellow tint, keep a little blue
+        nr = Math.round(avgY * 1.05) + 10;
+        ng = Math.round(avgY * 1.0) + 5;
+        nb = Math.round(avgY * 0.25);
+        // clamp
+        nr = nr > 255 ? 255 : nr < 0 ? 0 : nr;
+        ng = ng > 255 ? 255 : ng < 0 ? 0 : ng;
+        nb = nb > 255 ? 255 : nb < 0 ? 0 : nb;
+        break;
+      case "grayscale":
+        var y = Math.round(0.299*r + 0.587*g + 0.114*b);
+        nr = ng = nb = y;
+        break;
+      case "invert":
+        nr = 255 - r; ng = 255 - g; nb = 255 - b;
+        break;
+      default:
+        nr = r; ng = g; nb = b;
+    }
+    pal[i] = [nr, ng, nb, a];
+  }
+  window.palette = pal;
+}
+
+function restoreOriginalPalette() {
+  if(window._originalPalette) window.palette = window._originalPalette.map(function(p){ return p.slice(); });
 }
 
 // Given an object in the library, parse it into sprite data
