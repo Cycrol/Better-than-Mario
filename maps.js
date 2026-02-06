@@ -299,8 +299,8 @@ function getAreaFillStyle(setting) {
   if(stringHas(setting, "Underworld") ||
      stringHas(setting, "Castle") ||
      stringHas(setting, "Night"))
-      return stringHas(setting, "Underwater") ? "#2038ec" : "black";
-  if(stringHas(setting, "Underwater")) return "#2038ec";
+      return stringHas(setting, "Underwater") ? "#ffd54d" : "black";
+  if(stringHas(setting, "Underwater")) return "#ffd54d";
   return "#5c94fc";
 }
 function prethingsorter(a,b) {
@@ -770,8 +770,21 @@ function goOntoLand() {
 }
 function setMapGravity() {
   if(window.player) {
-    if(map.underwater) player.gravity = gravity / 2.8;
-    else player.gravity = gravity;
+    if(map.underwater) {
+      player.gravity = gravity / 2.8;
+      // Slow horizontal movement strongly to give a "swimming through honey" feel.
+      // `player.maxspeedsave` is set at player creation; use it as the normal max speed.
+      try {
+        // Moderate slowdown: keep most mobility but noticeably slower than normal
+        player.maxspeed = (player.maxspeedsave || player.maxspeed || unitsize * 1.35) * 0.75;
+      } catch(e) {}
+    }
+    else {
+      player.gravity = gravity;
+      try {
+        if(player.maxspeedsave) player.maxspeed = player.maxspeedsave;
+      } catch(e) {}
+    }
   }
 }
 

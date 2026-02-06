@@ -1531,11 +1531,13 @@ function movePlayer(me) {
     var dir = me.keys.run,
         // No sprinting underwater
         sprinting = (me.keys.sprint && !map.underwater) || 0,
-        adder = dir * (.098 * (sprinting + 1));
-    // Reduce the speed, both by subtracting and dividing a little
-    me.xvel += adder || 0;
-    me.xvel *= .98;
-    decel = .0007;
+        baseAdder = .098 * (sprinting + 1),
+        // Moderate reduction of acceleration when underwater
+        adder = dir * (map.underwater ? baseAdder * 0.6 : baseAdder);
+      // Apply the acceleration and moderate drag underwater
+      me.xvel += adder || 0;
+      me.xvel *= (map.underwater ? 0.95 : .98);
+      decel = (map.underwater ? 0.01 : .0007);
     // If you're accelerating in the opposite direction from your current velocity, that's a skid
     if(/*sprinting && */signBool(me.keys.run) == me.moveleft) {
       if(!me.skidding) {
@@ -1551,8 +1553,9 @@ function movePlayer(me) {
   }
   // Otherwise slow down a bit/*, with a little more if crouching*/
   else {
-    me.xvel *= (.98/* - Boolean(me.crouching) * .07*/);
-    decel = .035;
+    // Slightly increased passive drag when underwater, but not crippling
+    me.xvel *= (map.underwater ? 0.96 : .98);
+    decel = (map.underwater ? .02 : .035);
   }
 
   if(me.xvel > decel) me.xvel-=decel;
@@ -1640,10 +1643,12 @@ function playerPaddles(me) {
     removeClasses(me, /*"running */"skidding paddle1 paddle2 paddle3 paddle4 paddle5");
     addClass(me, "paddling");
     TimeHandler.clearClassCycle(me, "paddling_cycle");
-    TimeHandler.addSpriteCycle(me, ["paddle1", "paddle2", "paddle3", "paddle3", "paddle2", "paddle1", function() { return me.paddling = false; }], "paddling_cycle", 5);
+    // Slightly slower paddling animation to match the heavier feel
+    TimeHandler.addSpriteCycle(me, ["paddle1", "paddle2", "paddle3", "paddle3", "paddle2", "paddle1", function() { return me.paddling = false; }], "paddling_cycle", 8);
   }
   me.paddling = me.swimming = true;
-  me.yvel = unitsize * -.84;
+  // Give weaker upward thrust so swimming feels heavy and slow
+  me.yvel = unitsize * -.5;
 }
 
 function playerBubbles() {
