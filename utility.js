@@ -585,6 +585,32 @@ function moveJumping(me) {
   }
 }
 
+// Fireball movement: small bounce on first landing then slide with low friction
+function moveFireball(me) {
+  // Preserve original jumping initialization and basic horizontal accel
+  moveJumping(me);
+
+  // Small one-time bounce when first hitting ground, then slide
+  if(me.resting) {
+    if(!me._fireLanded) {
+      me._fireLanded = true;
+      me.yvel = -Math.abs(me.jumpheight) * 0.35; // small bounce
+      me.resting = false;
+    } else {
+      me.yvel = 0; // settle on ground
+    }
+  }
+
+  // Apply very light horizontal damping so fireballs "slide" along surfaces
+  me.xvel *= 0.995;
+
+  // Keep sprite facing consistent with motion
+  if(me.xvel > 0) { unflipHoriz(me); me.moveleft = false; }
+  else if(me.xvel < 0) { flipHoriz(me); me.moveleft = true; }
+
+  if(Math.abs(me.xvel) < 0.04) me.xvel = 0;
+}
+
 // Floating: the vertical version
 // Example usage on World 1-3
 // [moveFloating, 30, 72] slides up and down between 30 and 72

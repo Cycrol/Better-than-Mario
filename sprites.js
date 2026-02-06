@@ -18,6 +18,30 @@ function resetCanvas() {
   body.appendChild(canvas);
 }
 
+// Convert HSL to RGB (returns [r,g,b] 0-255)
+function hslToRgb(h, s, l){
+  h = (h % 360) / 360;
+  s = s; l = l;
+  var r, g, b;
+  if(s == 0) r = g = b = l; // achromatic
+  else {
+    function hue2rgb(p, q, t){
+      if(t < 0) t += 1;
+      if(t > 1) t -= 1;
+      if(t < 1/6) return p + (q - p) * 6 * t;
+      if(t < 1/2) return q;
+      if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+      return p;
+    }
+    var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    var p = 2 * l - q;
+    r = hue2rgb(p, q, h + 1/3);
+    g = hue2rgb(p, q, h);
+    b = hue2rgb(p, q, h - 1/3);
+  }
+  return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+}
+
 /* Sprite Parsing */
 // These functions deal turning library.rawsprites strings into library.sprites Uint8ClampedArrays
 // * Normal sprites (see library.js::libraryParse):
@@ -342,6 +366,27 @@ function refillThingCanvas(thing) {
       context = thing.context,
       imageData = context.getImageData(0, 0, canvas.width, canvas.height);
   memcpyU8(thing.sprite, imageData.data);
+  // Apply butter tint per-sprite: blend original colors towards a yellow shade
+  if(thing._butterIndex != null) {
+    var data = imageData.data,
+        len = data.length,
+        // pick a hue in yellow range based on index (40deg - 70deg)
+        hue = 40 + (thing._butterIndex * 37 % 31),
+        // vary saturation/lightness a bit
+        sat = 0.55 + ((thing._butterIndex % 5) * 0.06),
+        lig = 0.55 + ((thing._butterIndex % 7) * 0.02),
+        target = hslToRgb(hue, sat, lig),
+        // blend factor (how buttery) varies per-sprite
+        blend = 0.45 + ((thing._butterIndex % 6) * 0.07),
+        i, a;
+    for(i = 0; i < len; i += 4) {
+      a = data[i + 3];
+      if(!a) continue;
+      data[i] = Math.round(data[i] * (1 - blend) + target[0] * blend);
+      data[i+1] = Math.round(data[i+1] * (1 - blend) + target[1] * blend);
+      data[i+2] = Math.round(data[i+2] * (1 - blend) + target[2] * blend);
+    }
+  }
   context.putImageData(imageData, 0, 0);
 }
 // Like refillThingCanvas, but for multiple sprites
