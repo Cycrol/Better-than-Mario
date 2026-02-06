@@ -61,6 +61,10 @@ function setContextStuff(me, spritewidth, spriteheight) {
   me.imageData = me.context.getImageData(0, 0, me.spritewidthpixels, me.spriteheightpixels);
   me.sprite_type = me.sprite_type || "neither";
   canvasDisableSmoothing(me, me.context);
+
+  // Butter theming: give each sprite a unique butter index used to tint to yellows
+  if(!window._butterCounter) window._butterCounter = 0;
+  me._butterIndex = window._butterCounter++;
 }
 
 // A helper function to make a Thing given the type and arguments
@@ -217,7 +221,7 @@ function FireBall(me, moveleft) {
   me.nofire = me.nostar = me.collide_primary = true;
   me.moveleft = moveleft;
   me.animate = emergeFire;
-  me.movement = moveJumping;
+  me.movement = moveFireball;
   me.collide = fireEnemy;
   me.death = fireExplodes;
   setCharacter(me, "fireball");
